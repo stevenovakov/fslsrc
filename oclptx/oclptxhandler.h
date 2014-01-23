@@ -44,6 +44,9 @@
 #else
 #include <CL/cl.hpp>
 #endif
+
+#include "customtypes.h" 
+
  
 class OclPtxHandler{
   

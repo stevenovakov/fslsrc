@@ -111,7 +111,7 @@ void OclPtxHandler::ThreadController()
     
     //
     // One while/for loop for thread CREATION/QUEUEING/EXECUTION
-    //
+    // 
     
     //
     // One while/for loop for thread collection/joining
@@ -296,7 +296,7 @@ cl::Program OclPtxHandler::CreateProgram()
 		
     // TODO 
     //  dump all error logging to logfile
-    //
+    //  maybe differentiate b/w regular errors and cl errors
     
 		if( oclErrorStrings(err.err()) != "CL_SUCCESS")
     {

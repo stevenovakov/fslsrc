@@ -6,6 +6,14 @@
 
 include $(FSLCONFDIR)/default.mk
 
+# IMPORTANT
+#
+# Make sure following enviroment variables set
+# $OCLDIR (cl.h/cl.hpp location)
+# $OCLLIBDIR (libOpenCl.so location)
+#
+# IMPORTANT
+
 PROJNAME = fdt
 
 #OPTFLAGS = -ggdb
@@ -23,7 +31,7 @@ GPP=g++
 
 # to be included when compiling any executables making use of ocl runtime
 OCLLDFLAGS= -L/usr/lib -lOpenCL
-OCLCFLAGS= -I/usr/local/cuda/include -I/opt/AMD-APP-SDK*/include
+OCLCFLAGS= -I/usr/local/cuda/include -I/opt/AMD-APP-SDK*/include -lpthread
 
 
 
@@ -50,4 +58,19 @@ ${OCLPTX}:
 clean:
 		rm $(OCLPTXOBJ) $(OCLPTXSHOBJ) $(XFILES)
 
+
+
+#FIXING COMPATIBILITY ISSUES (FROM THE MIND OF JEFF TAYLOR):
+#The quickest solution I can think of would be to add two rules:
+
+#oclptx.o: oclptx.cc oclptx.h
+#<tab>$(CPP) <your desired options> -o $@ $^
+
+#oclptxhandler.o: oclptxhandler.cc oclptxhandler.h
+#<tab>$(CPP) <your desired options> -o $@ $^
+
+#A few notes:
+ #- The tab must be a tab (no number of spaces will do).  You should only have one tab.  I don't know why FSL's files include a bunch.  Ignore them.
+ #- $@ expands to the target ("oclptx.o",etc).  @^ expands to its dependency list ("oclptx.cc oclptx.h" or the other)
+ #- $(VARIABLE) expands to that variable (text substitution).  I've never seen the squiggly braces, but I guess they work. :/
 #EOF

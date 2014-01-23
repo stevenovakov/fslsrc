@@ -43,6 +43,7 @@
 #endif
 
 #include "oclptx.h"
+#include "interptest.cc"
 
 //*********************************************************************
 //
@@ -65,6 +66,31 @@ int main(int argc, char *argv[] )
   OclPtxHandler * ptx_handler;
   ptx_handler = new OclPtxHandler();
   
+  
+  //*******************************************************************
+  // 
+  //  TEST ROUTINE
+  // 
+  //*******************************************************************
+  
+  int XN = 20;
+  int YN = 20;
+  int ZN = 20;
+  
+  int nseed = 100;
+  float3 mins( 8.0, 8.0, 0.0);
+  float3 maxs( 12.0, 12.0, 1.0);
+  
+  
+  3DIntVolume voxel_space = CreateVoxelSpace( XN, YN, ZN);
+  3DFloatVolume flow_space = CreateFlowSpace( voxel_space );                     
+  std::vector<float3> seed_space = RandSeedSpace( nseed, mins, maxs );
+  
+  //*******************************************************************
+  // 
+  //  END TEST ROUTINE
+  // 
+  //*******************************************************************
   
   delete ptx_handler;
   
