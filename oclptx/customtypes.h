@@ -90,9 +90,9 @@ struct float4
 struct float3
 {
 	//Constructors
-	float2() {};
-	float2(float s) : x(s), y(s), z(s) {}
-	float2(float s1, float s2, float s3) : x(s1), y(s2), z(s3) {}
+	float3() {};
+	float3(float s) : x(s), y(s), z(s) {}
+	float3(float s1, float s2, float s3) : x(s1), y(s2), z(s3) {}
 
 	//Struct Data
 	float x, y, z;
@@ -143,24 +143,24 @@ struct int3
 };
 
 
-struct 3DIntVolume
+struct IntVolume
 {
   //Constructors
-  3DIntVolume(){};
+  IntVolume() {};
   
   std::vector<int3> v0, v1, v2, v3, v4, v5, v6, v7;
   int nx, ny, nz;  
   
-}
+};
 
-struct 3DFloatVolume
+struct FloatVolume
 {
   //Constructors
-  3DFloatVolume(){};
+  FloatVolume() {};
   
   std::vector<float3> v0, v1, v2, v3, v4, v5, v6, v7;
   int nx, ny, nz;  
   
-}
+};
 
 #endif

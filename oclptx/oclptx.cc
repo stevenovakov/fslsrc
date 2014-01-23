@@ -81,10 +81,14 @@ int main(int argc, char *argv[] )
   float3 mins( 8.0, 8.0, 0.0);
   float3 maxs( 12.0, 12.0, 1.0);
   
-  
-  3DIntVolume voxel_space = CreateVoxelSpace( XN, YN, ZN);
-  3DFloatVolume flow_space = CreateFlowSpace( voxel_space );                     
+  IntVolume voxel_space = CreateVoxelSpace( XN, YN, ZN);
+  FloatVolume flow_space = CreateFlowSpace( voxel_space );                   
   std::vector<float3> seed_space = RandSeedSpace( nseed, mins, maxs );
+
+  
+  VolumeToFile(voxel_space, flow_space);
+  
+  
   
   //*******************************************************************
   // 
