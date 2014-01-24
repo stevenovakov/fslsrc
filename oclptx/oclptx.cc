@@ -85,6 +85,7 @@ int main(int argc, char *argv[] )
   FloatVolume flow_space = CreateFlowSpace( voxel_space );                   
   std::vector<float3> seed_space = RandSeedSpace( nseed, mins, maxs );
 
+  fuckoff
   
   VolumeToFile(voxel_space, flow_space);
   

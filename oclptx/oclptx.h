@@ -29,6 +29,11 @@
  *
  */
  
+#ifndef  OCLPTX_OCLPTX_H_
+#define  OCLPTX_OCLPTX_H_
  
 #include "oclptxhandler.h"
 #include "customtypes.h" 
+
+
+#endif

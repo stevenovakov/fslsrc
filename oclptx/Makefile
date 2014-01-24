@@ -30,14 +30,14 @@ endif
 GPP=g++
 
 # to be included when compiling any executables making use of ocl runtime
-OCLLDFLAGS= -L/usr/lib -lOpenCL
-OCLCFLAGS= -I/usr/local/cuda/include -I/opt/AMD-APP-SDK*/include -lpthread
+OCLLDFLAGS= ${LDFLAGS} -L/usr/lib -lOpenCL
+OCLCFLAGS= ${CXXFLAGS} -I/usr/local/cuda/include -I/opt/AMD-APP-SDK*/include -lpthread
 
 
 
 OCLPTX=oclptx
 OCLPTXOBJ = oclptx.o oclptxhandler.o
-OCLPTXSHOBJ = oclptx.so
+#OCLPTXSHOBJ = oclptx.so
 
 XFILES = oclptx
 
@@ -49,11 +49,20 @@ all: ${XFILES}
 #	does not work for me. Maybe Jeff should take a look at this.
 #
 
-${OCLPTX}:
-		$(GPP) $(OCLCFLAGS) -o oclptx.o -c -fPIC oclptx.cc
-		$(GPP) $(OCLCFLAGS) -o oclptxhandler.o -c -fPIC oclptxhandler.cc
-		$(GPP) $(OCLCFLAGS) -Wall -shared -o $(OCLPTXSHOBJ) $(OCLPTXOBJ)
-		$(GPP) $(OCLPTXSHOBJ) -o $(OCLPTX) -g $(OCLLDFLAGS)
+#${OCLPTX}:
+		#$(GPP) $(OCLCFLAGS) -o oclptx.o -c -fPIC oclptx.cc
+		#$(GPP) $(OCLCFLAGS) -o oclptxhandler.o -c -fPIC oclptxhandler.cc
+		#$(GPP) $(OCLCFLAGS) -Wall -shared -o $(OCLPTXSHOBJ) $(OCLPTXOBJ)
+		#$(GPP) $(OCLPTXSHOBJ) -o $(OCLPTX) -g $(OCLLDFLAGS)
+oclptx.o: oclptx.cc
+	$(CPP) $(OCLCFLAGS) -o $@ $^
+
+oclptxhandler.o: oclptxhandler.cc
+	$(CPP) $(OCLCFLAGS) -o $@ $^		
+
+${OCLPTX}:    	${OCLPTXOBJ}	
+		   ${CXX} ${CXXFLAGS} ${OCLLDFLAGS} -o $@ ${OCLPTXOBJ} ${DLIBS}
+
 
 clean:
 		rm $(OCLPTXOBJ) $(OCLPTXSHOBJ) $(XFILES)
