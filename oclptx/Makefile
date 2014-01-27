@@ -30,56 +30,25 @@ endif
 GPP=g++
 
 # to be included when compiling any executables making use of ocl runtime
-OCLLDFLAGS= ${LDFLAGS} -L/usr/lib -lOpenCL
-OCLCFLAGS= ${CXXFLAGS} -I/usr/local/cuda/include -I/opt/AMD-APP-SDK*/include -lpthread
-
-
+OCLLDFLAGS= -L/opt/AMD-APP-SDK-v2.8-RC-lnx64/lib/x86_64 -lOpenCL
+# one or the other
+OCLCFLAGS=  ${CXXFLAGS} -fPIC -I/opt/AMD-APP-SDK-v2.8-RC-lnx64/include -std=c++0x
+#OCLCFLAGS=  ${CXXFLAGS} -fPIC -I/usr/local/cuda/include -std=c++0x -g
 
 OCLPTX=oclptx
 OCLPTXOBJ = oclptx.o oclptxhandler.o
-#OCLPTXSHOBJ = oclptx.so
+OCLPTXSHOBJ = oclptx.so
 
 XFILES = oclptx
 
 all: ${XFILES} 
 
-#
-#STEVE TODO
-#	I can't figure out how to incorporate their make syntax, it just 
-#	does not work for me. Maybe Jeff should take a look at this.
-#
-
-#${OCLPTX}:
-		#$(GPP) $(OCLCFLAGS) -o oclptx.o -c -fPIC oclptx.cc
-		#$(GPP) $(OCLCFLAGS) -o oclptxhandler.o -c -fPIC oclptxhandler.cc
-		#$(GPP) $(OCLCFLAGS) -Wall -shared -o $(OCLPTXSHOBJ) $(OCLPTXOBJ)
-		#$(GPP) $(OCLPTXSHOBJ) -o $(OCLPTX) -g $(OCLLDFLAGS)
-oclptx.o: oclptx.cc
-	$(CPP) $(OCLCFLAGS) -o $@ $^
-
-oclptxhandler.o: oclptxhandler.cc
-	$(CPP) $(OCLCFLAGS) -o $@ $^		
-
-${OCLPTX}:    	${OCLPTXOBJ}	
-		   ${CXX} ${CXXFLAGS} ${OCLLDFLAGS} -o $@ ${OCLPTXOBJ} ${DLIBS}
-
+${OCLPTX}:
+		$(GPP) $(OCLCFLAGS) -o oclptx.o -c -fPIC oclptx.cc
+		$(GPP) $(OCLCFLAGS) -o oclptxhandler.o -c -fPIC oclptxhandler.cc
+		$(GPP) $(OCLCFLAGS) -Wall -shared -o $(OCLPTXSHOBJ) $(OCLPTXOBJ)
+		$(GPP) $(OCLPTXSHOBJ) -o $(OCLPTX) -g $(OCLLDFLAGS)
+		
 
 clean:
-		rm $(OCLPTXOBJ) $(OCLPTXSHOBJ) $(XFILES)
-
-
-
-#FIXING COMPATIBILITY ISSUES (FROM THE MIND OF JEFF TAYLOR):
-#The quickest solution I can think of would be to add two rules:
-
-#oclptx.o: oclptx.cc oclptx.h
-#<tab>$(CPP) <your desired options> -o $@ $^
-
-#oclptxhandler.o: oclptxhandler.cc oclptxhandler.h
-#<tab>$(CPP) <your desired options> -o $@ $^
-
-#A few notes:
- #- The tab must be a tab (no number of spaces will do).  You should only have one tab.  I don't know why FSL's files include a bunch.  Ignore them.
- #- $@ expands to the target ("oclptx.o",etc).  @^ expands to its dependency list ("oclptx.cc oclptx.h" or the other)
- #- $(VARIABLE) expands to that variable (text substitution).  I've never seen the squiggly braces, but I guess they work. :/
-#EOF
+		rm $(OCLPTXOBJ) $(XFILES)

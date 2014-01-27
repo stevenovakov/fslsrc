@@ -45,10 +45,15 @@
 // 
 IntVolume CreateVoxelSpace( int NX, int NY, int NZ );
 FloatVolume CreateFlowSpace( FloatVolume voxel_space );                     
-float3 FlowFunction( int3 coords, int NX, int NY, int NZ );
-std::vector<float3> RandSeedSpace( int n, float3 mins, float3 maxs );
+float3 FlowFunction( int3 coords, float dr, int NX, int NY, int NZ );
+std::vector<float3> RandSeedPoints( int n, 
+  IntVolume vvol, std::vector<unsigned int> seed_elem );
+std::vector<unsigned int> RandSeedElem( int n,
+  float3 mins, float3 maxs, IntVolume vvol );
+
 void VolumeToFile( IntVolume ivol, FloatVolume fvol );
- 
+void PathsToFile( std::vector<float3> path_vector,
+  unsigned int n_seeds, unsigned int n_steps);
  
 //
 // Simple integer voxel space, from 0,0,0 to N,N,N
@@ -62,21 +67,21 @@ IntVolume CreateVoxelSpace( int NX, int NY, int NZ )
   voxel_space.ny = NY;
   voxel_space.nz = NZ;  
   
-  for(int i = 0; i < NX; i ++)
+  for(int k = 0; k < NZ; k ++)
   {
         for(int j = 0; j < NY; j++)
         {
-            for(int k = 0; k < NZ; k++)
+            for(int i = 0; i < NX; i++)
             {
               
-              voxel_space.v0.push_back(int3(i,j,k));
-              voxel_space.v1.push_back(int3(i+1,j,k));
-              voxel_space.v2.push_back(int3(i+1,j+1,k));
-              voxel_space.v3.push_back(int3(i, j+1, k));
-              voxel_space.v4.push_back(int3(i, j, k+1));
-              voxel_space.v5.push_back(int3(i+1, j, k+1));
-              voxel_space.v6.push_back(int3(i+1, j+1, k));
-              voxel_space.v7.push_back(int3(i, j+1, k));
+              voxel_space.vol.push_back(int3(i,j,k));
+              voxel_space.vol.push_back(int3(i+1,j,k));
+              voxel_space.vol.push_back(int3(i+1,j+1,k));
+              voxel_space.vol.push_back(int3(i, j+1, k));
+              voxel_space.vol.push_back(int3(i, j, k+1));
+              voxel_space.vol.push_back(int3(i+1, j, k+1));
+              voxel_space.vol.push_back(int3(i+1, j+1, k));
+              voxel_space.vol.push_back(int3(i, j+1, k));
               
             }
         }
@@ -85,7 +90,7 @@ IntVolume CreateVoxelSpace( int NX, int NY, int NZ )
   return voxel_space;  
 }
 
-FloatVolume CreateFlowSpace(  IntVolume voxel_space )
+FloatVolume CreateFlowSpace(  IntVolume voxel_space, float dr )
 {
   
   FloatVolume flow_space;
@@ -94,113 +99,88 @@ FloatVolume CreateFlowSpace(  IntVolume voxel_space )
   flow_space.nz = voxel_space.nz;
   
   std::vector<int3>::iterator vit;
+
+  for(vit = voxel_space.vol.begin(); 
+    vit != voxel_space.vol.end(); ++vit)
+  {
+      flow_space.vol.push_back( FlowFunction( *vit,
+                                              dr,
+                                              flow_space.nx,
+                                              flow_space.ny, 
+                                              flow_space.nz
+                                            )
+                              );
+  }
+
   
-  for(vit = voxel_space.v0.begin(); vit != voxel_space.v0.end(); ++vit)
-  {
-      flow_space.v0.push_back( FlowFunction( *vit,
-                                              flow_space.nx,
-                                              flow_space.ny, 
-                                              flow_space.nz
-                                            )
-                              );
-  }
-  for(vit = voxel_space.v1.begin(); vit != voxel_space.v1.end(); ++vit)
-  {
-      flow_space.v1.push_back( FlowFunction( *vit,
-                                              flow_space.nx,
-                                              flow_space.ny, 
-                                              flow_space.nz
-                                            )
-                              );
-  }
-  for(vit = voxel_space.v2.begin(); vit != voxel_space.v2.end(); ++vit)
-  {
-      flow_space.v2.push_back( FlowFunction( *vit,
-                                              flow_space.nx,
-                                              flow_space.ny, 
-                                              flow_space.nz
-                                            )
-                              );
-  }
-  for(vit = voxel_space.v3.begin(); vit != voxel_space.v3.end(); ++vit)
-  {
-      flow_space.v3.push_back( FlowFunction( *vit,
-                                              flow_space.nx,
-                                              flow_space.ny, 
-                                              flow_space.nz
-                                            )
-                              );
-  }
-  for(vit = voxel_space.v4.begin(); vit != voxel_space.v4.end(); ++vit)
-  {
-      flow_space.v4.push_back( FlowFunction( *vit,
-                                              flow_space.nx,
-                                              flow_space.ny, 
-                                              flow_space.nz
-                                            )
-                              );
-  }
-  for(vit = voxel_space.v5.begin(); vit != voxel_space.v5.end(); ++vit)
-  {
-      flow_space.v5.push_back( FlowFunction( *vit,
-                                              flow_space.nx,
-                                              flow_space.ny, 
-                                              flow_space.nz
-                                            )
-                              );
-  }
-  for(vit = voxel_space.v6.begin(); vit != voxel_space.v6.end(); ++vit)
-  {
-     flow_space.v6.push_back( FlowFunction( *vit,
-                                            flow_space.nx,
-                                            flow_space.ny, 
-                                            flow_space.nz
-                                          )
-                            );
-  }
-  for(vit = voxel_space.v7.begin(); vit != voxel_space.v7.end(); ++vit)
-  {
-      flow_space.v7.push_back( FlowFunction( *vit,
-                                              flow_space.nx,
-                                              flow_space.ny, 
-                                              flow_space.nz
-                                            )
-                              );
-  }
   
   return flow_space;  
 }
 
-float3 FlowFunction( int3 coords, int NX, int NY, int NZ )
+float3 FlowFunction( int3 coords, float dr, int NX, int NY, int NZ )
 {
   //
   // Right now its just like a "tree" from center of space to top
   //    
   
-  float r = 1.0;
+  float r = dr;
   float theta = std::atan(1.0) * (float) coords.z/ (float) NZ;
   float phi = 
     std::atan((float) (2*coords.y - NY)/ (float) (2*coords.x - NX));
   
-  return float3( r*std::cos(phi)*std::sin(theta),
-                  r*std::sin(phi)*std::sin(theta),
-                  r*std::cos(theta)
-                );  
+  return float3( r, phi, theta);  
 }
 
+std::vector<unsigned int> RandSeedElem( unsigned int n, float3 mins,
+  float3 maxs, IntVolume vvol )
+{
+  std::vector<unsigned int> seed_elem;
+  int temp_elem;
+  
+  unsigned int x, y, z;
+  
+  srand( time(NULL) ); 
+  
+  for(unsigned int i = 0; i < seed_elem.size(); i++)
+  {
+    x = (unsigned int)  rand()%1000*(maxs.x - mins.x) + mins.x;
+    y = (unsigned int)  rand()%1000*(maxs.y - mins.y) + mins.y;
+    z = (unsigned int)  rand()%1000*(maxs.z - mins.z) + mins.z;
+  
+    temp_elem = z*(8*vvol.nx*vvol.ny) + y*8*vvol.nx + 8*x;
+    // "elem #" is START of vertex list 0, 1, 2, ...., 6, 7
 
-std::vector<float3> RandSeedSpace( int n, float3 mins, float3 maxs )
+    seed_elem.push_back((unsigned int) temp_elem);
+  }
+  
+  return seed_elem;
+  
+}
+
+std::vector<float3> RandSeedPoints( int n, 
+  IntVolume vvol, std::vector<unsigned int> seed_elem )
 {
   std::vector<float3> seed_set;
   float3 temp_point;
   
+  int maxx, minx, maxy, miny, maxz, minz;
+  
   srand( time(NULL) );
   
-  for(int i = 0; i < n; i++)
+  for(unsigned int i = 0; i < seed_elem.size(); i++)
   {
-    temp_point.x = rand()%1000*(maxs.x - mins.x) + mins.x;
-    temp_point.y = rand()%1000*(maxs.y - mins.y) + mins.y;
-    temp_point.z = rand()%1000*(maxs.z - mins.z) + mins.z;
+    minx = vvol.vol.at(seed_elem.at(i)).x;
+    maxx = vvol.vol.at(seed_elem.at(i) + 1).x;
+    
+    miny = vvol.vol.at(seed_elem.at(i)).y;
+    maxy = vvol.vol.at(seed_elem.at(i)+2).y;
+    
+    minz = vvol.vol.at(seed_elem.at(i)).z;
+    maxz = vvol.vol.at(seed_elem.at(i)+4).z;
+    
+    temp_point.x = rand()%1000*(maxx - minx) + minx;
+    temp_point.y = rand()%1000*(maxy - miny) + miny;
+    temp_point.z = rand()%1000*(maxz - minz) + minz;
 
     seed_set.push_back(temp_point);
   }
@@ -212,8 +192,8 @@ std::vector<float3> RandSeedSpace( int n, float3 mins, float3 maxs )
 void VolumeToFile( IntVolume vvol, FloatVolume fvol )
 {
   
-  int vsize = vvol.v0.size();
-  int fsize = fvol.v0.size();
+  int vsize = vvol.vol.size()/8;
+  int fsize = fvol.vol.size()/8;
   
   std::ostringstream convert (std::ostringstream::ate);
   
@@ -224,9 +204,9 @@ void VolumeToFile( IntVolume vvol, FloatVolume fvol )
 	time_t t = time(0);
 	struct tm * now = localtime(&t);
 	
-	convert << "Test Data/" << now->tm_hour << ":" << now->tm_min <<
-	":" << now->tm_sec << "_" << now->tm_yday <<
-		"-" << ((int) now->tm_year) + 1900;
+	convert << "Test Data/"<< now->tm_yday << "-" <<
+    ((int) now->tm_year) + 1900 << "_"<< now->tm_hour << ":" <<
+      now->tm_min << ":" << now->tm_sec;
 		
 	volume_filename = convert.str() + "_VOL.dat";
   flow_filename = convert.str() + "_FLOW.dat";
@@ -234,27 +214,19 @@ void VolumeToFile( IntVolume vvol, FloatVolume fvol )
   std::fstream volume_file;
 	volume_file.open(volume_filename.c_str(), std::ios::app|std::ios::out);
   
+  
   for(int i = 0; i < vsize; i ++)
   {
-			
-		volume_file<< vvol.v0.at(i).x <<"," << vvol.v0.at(i).y << "," <<
-      vvol.v0.at(i).z << ",";
-		volume_file<< vvol.v1.at(i).x <<"," << vvol.v1.at(i).y << "," <<
-      vvol.v1.at(i).z << ",";
-    volume_file<< vvol.v2.at(i).x <<"," << vvol.v2.at(i).y << "," <<
-      vvol.v2.at(i).z << ",";
-    volume_file<< vvol.v3.at(i).x <<"," << vvol.v3.at(i).y << "," <<
-      vvol.v3.at(i).z << ",";
-    volume_file<< vvol.v4.at(i).x <<"," << vvol.v4.at(i).y << "," <<
-      vvol.v4.at(i).z << ",";
-    volume_file<< vvol.v5.at(i).x <<"," << vvol.v5.at(i).y << "," <<
-      vvol.v5.at(i).z << ",";  
-		volume_file<< vvol.v6.at(i).x <<"," << vvol.v6.at(i).y << "," <<
-      vvol.v6.at(i).z << ",";
-    volume_file<< vvol.v7.at(i).x <<"," << vvol.v7.at(i).y << "," <<
-      vvol.v7.at(i).z;
+    for( int j = 0; j < 8; j++)
+    {
+      volume_file<< vvol.vol.at(j + i).x <<"," << vvol.vol.at(j + i).y << "," <<
+        vvol.vol.at(j + i).z;
+      
+      if( j < 7 )
+        volume_file<<",";
+    }
         
-		if( i == vsize - 1)
+		if( i == vsize/8 - 1)
 			break;
 		else
 			volume_file <<"\n";
@@ -266,32 +238,102 @@ void VolumeToFile( IntVolume vvol, FloatVolume fvol )
   std::fstream flow_file;
 	flow_file.open(flow_filename.c_str(), std::ios::app|std::ios::out);
   
-  for(int i = 0; i < vsize; i ++)
+  for(int i = 0; i < fsize; i ++)
   {
 			
-		flow_file<< fvol.v0.at(i).x <<"," << fvol.v0.at(i).y << "," <<
-      fvol.v0.at(i).z << ",";
-		flow_file<< fvol.v1.at(i).x <<"," << fvol.v1.at(i).y << "," <<
-      fvol.v1.at(i).z << ",";
-    flow_file<< fvol.v2.at(i).x <<"," << fvol.v2.at(i).y << "," <<
-      fvol.v2.at(i).z << ",";
-    flow_file<< fvol.v3.at(i).x <<"," << fvol.v3.at(i).y << "," <<
-      fvol.v3.at(i).z << ",";
-    flow_file<< fvol.v4.at(i).x <<"," << fvol.v4.at(i).y << "," <<
-      fvol.v4.at(i).z << ",";
-    flow_file<< fvol.v5.at(i).x <<"," << fvol.v5.at(i).y << "," <<
-      fvol.v5.at(i).z << ",";  
-		flow_file<< fvol.v6.at(i).x <<"," << fvol.v6.at(i).y << "," <<
-      fvol.v6.at(i).z << ",";
-    flow_file<< fvol.v7.at(i).x <<"," << fvol.v7.at(i).y << "," <<
-      fvol.v7.at(i).z;
+    for( int j = 0; j < 8; j++)
+    {
+      flow_file<< fvol.vol.at(j + i).x <<"," << fvol.vol.at(j + i).y << "," <<
+        fvol.vol.at(j + i).z;
+      
+      if( j < 7 )
+        flow_file<<",";
+    }
         
-		if( i == vsize - 1)
+		if( i == fsize - 1)
 			break;
 		else
 			flow_file <<"\n";
 	}
   
   flow_file.close();  
+  
+}
+
+
+void PathsToFile( std::vector<float3> path_vector,
+  unsigned int n_seeds, unsigned int n_steps)
+{
+    
+  std::ostringstream convert (std::ostringstream::ate);
+  
+  std::string path_filename;
+  
+	std::vector<float> temp_x;
+  std::vector<float> temp_y;
+  std::vector<float> temp_z;
+  
+	time_t t = time(0);
+	struct tm * now = localtime(&t);
+	
+	convert << "Test Data/"<< now->tm_yday << "-" <<
+    ((int) now->tm_year) + 1900 << "_"<< now->tm_hour << ":" <<
+      now->tm_min << ":" << now->tm_sec;
+		
+	path_filename = convert.str() + "_PATH.dat";
+  std::cout<<"Writing to " << path_filename <<"\n";
+   
+  std::fstream path_file;
+	path_file.open(path_filename.c_str(), std::ios::app|std::ios::out);
+  
+  for( unsigned int n = 0; n < n_seeds;n ++ )
+  {
+    for( unsigned int s = 0; s < n_steps; s++ )
+    {
+      temp_x.push_back( path_vector.at(n*n_steps + s).x );
+      temp_y.push_back( path_vector.at(n*n_steps + s).y );
+      temp_z.push_back( path_vector.at(n*n_steps + s).z );    
+    }
+    
+    for(unsigned int i = 0; i < n_steps; i++)
+    {
+      path_file<<temp_x.at(i);
+      
+      if(n < (unsigned int) n_steps - 1)
+        path_file<<",";
+      else
+        path_file<<"\n";   
+    }
+    
+    for(unsigned int i = 0; i < (unsigned int) n_steps; i++)
+    {
+      path_file<<temp_y.at(i);
+      
+      if(n < (unsigned int) n_steps - 1)
+        path_file<<",";
+      else
+        path_file<<"\n";    
+    }
+    
+    for(unsigned int i = 0; i < (unsigned int) n_steps; i++)
+    {
+      path_file<<temp_z.at(i);
+      
+      if(n < (unsigned int) n_steps - 1)
+        path_file<<",";
+      else
+        path_file<<"\n";    
+    }
+    
+    temp_x.clear();
+    temp_y.clear();
+    temp_z.clear();
+    
+    if(n < (unsigned int) n_seeds - 1)
+      path_file<<"\n";
+    
+  }
+  
+  path_file.close();
   
 }

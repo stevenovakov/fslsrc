@@ -61,3 +61,5 @@ __kernel void PrngTestKernel(
   unsigned int globalZ = get_global_size(2);
 
 }
+
+//EOF

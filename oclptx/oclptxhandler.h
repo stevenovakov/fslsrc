@@ -34,6 +34,8 @@
 
 #include <iostream>
 #include <vector>
+#include <thread>
+#include <mutex>
 
 #define __CL_ENABLE_EXCEPTIONS
 // adds exception support from CL libraries
@@ -59,6 +61,12 @@ class OclPtxHandler{
     ~OclPtxHandler();
     
     //
+    // Container Set/Get
+    //
+    
+    void SetOclRoutine(std::string new_routine);
+    
+    //
     // Thread Management
     //
     
@@ -72,20 +80,44 @@ class OclPtxHandler{
     
     void OclInit();
     
+    void OclDeviceInfo();
+    
     void NewCLCommandQueues();
     
     cl::Program CreateProgram();
     
-    void PrepOclContainers();
+    void InstantiateBuffers();
     
+    void WriteBuffer(cl::Buffer * target_buffer,
+                      unsigned int buffer_mem_size,
+                      cl::CommandQueue * target_cq,
+                      std::mutex * cq_mutex,
+                      std::string container_type,
+                      void * container_pointer, // OHGODBECAREFUL
+                      bool blocking
+                    );
+                      
     
+    //
+    // Interpolation
+    //
     
+    std::vector<float3> InterpolationTestRoutine( 
+      IntVolume voxel_space,
+      FloatVolume flow_space, 
+      std::vector<float3> seed_space,
+      std::vector<unsigned int> seed_elem,
+      unsigned int n_seeds,
+      unsigned int n_steps,
+      float dr
+    );
     
+  
   private:
   
     //
     // Containers
-    //
+    
   
     //
     // OpenCL Objects
@@ -97,10 +129,19 @@ class OclPtxHandler{
 		std::vector<cl::Device> ocl_devices;
 		
 		std::vector<cl::CommandQueue> ocl_device_queues;
+    std::vector<MutexWrapper> ocl_device_queue_mutexs;
 		
 		std::vector<cl::Kernel> ocl_kernel_set;
 		//Every compiled kernel is stored here.
-		
+    
+    
+    // read = CL_MEM_READ_ONLY
+    // write = CL_MEM_READ_WRITE, CL_MEM_WRITE_ONLY
+    std::vector<cl::Buffer> write_buffer_set;
+    std::vector<unsigned int> write_buffer_set_sizes;
+    std::vector<cl::Buffer> read_buffer_set;
+		std::vector<unsigned int> read_buffer_set_sizes;
+    
 		bool ocl_profiling;
 		
 		std::string ocl_routine_name;

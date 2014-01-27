@@ -82,3 +82,5 @@ float2 BoxMuller()
   float theta=2*PI*u1;
   return make_float2(r*sin(theta),r*cos(theta));
 }
+
+//EOF

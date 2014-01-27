@@ -43,6 +43,7 @@
 #endif
 
 #include "oclptx.h"
+
 #include "interptest.cc"
 
 //*********************************************************************
@@ -51,7 +52,9 @@
 //
 //*********************************************************************
 
-
+// Ask Jeff about maybe a good library to deal with CLI argument parsing
+// writing the custom function to parse argc/argv sucks so bad
+//int argMapper(int argc, char*argv[]);
 
 
 //*********************************************************************
@@ -64,8 +67,8 @@ int main(int argc, char *argv[] )
 {
   
   OclPtxHandler * ptx_handler;
-  ptx_handler = new OclPtxHandler();
   
+  ptx_handler = new OclPtxHandler("interptest");
   
   //*******************************************************************
   // 
@@ -77,20 +80,43 @@ int main(int argc, char *argv[] )
   int YN = 20;
   int ZN = 20;
   
-  int nseed = 100;
+  unsigned int nseeds = 100;
+  unsigned int nsteps = 100;
+  
   float3 mins( 8.0, 8.0, 0.0);
   float3 maxs( 12.0, 12.0, 1.0);
   
-  IntVolume voxel_space = CreateVoxelSpace( XN, YN, ZN);
-  FloatVolume flow_space = CreateFlowSpace( voxel_space );                   
-  std::vector<float3> seed_space = RandSeedSpace( nseed, mins, maxs );
-
-  fuckoff
+  float dr = 0.1;  
   
+  IntVolume voxel_space = CreateVoxelSpace( XN, YN, ZN);
+  FloatVolume flow_space = CreateFlowSpace( voxel_space, dr);
+  std::vector<unsigned int> seed_elem = RandSeedElem(  
+    nseeds,
+    mins,
+    maxs,
+    voxel_space
+  );                  
+  
+  std::vector<float3> seed_space = RandSeedPoints(  nseeds, 
+                                                    voxel_space,
+                                                    seed_elem
+                                                  );
+
   VolumeToFile(voxel_space, flow_space);
   
-  
-  
+  PathsToFile(  ptx_handler->InterpolationTestRoutine(  voxel_space,
+                                                        flow_space,
+                                                        seed_space,
+                                                        seed_elem,
+                                                        nseeds,
+                                                        nsteps,
+                                                        dr
+                                                      ),
+                nseeds,
+                nsteps
+  );
+
+
   //*******************************************************************
   // 
   //  END TEST ROUTINE

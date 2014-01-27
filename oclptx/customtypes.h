@@ -32,6 +32,8 @@
 
 #include <iostream>
 #include <vector>
+#include <thread>
+#include <mutex>
 
 
 #ifndef OCLPTX_CUSTOMTYPES_H_
@@ -143,24 +145,38 @@ struct int3
 };
 
 
+
 struct IntVolume
 {
   //Constructors
-  IntVolume() {};
+  IntVolume(){};
   
-  std::vector<int3> v0, v1, v2, v3, v4, v5, v6, v7;
+  std::vector<int3> vol;
   int nx, ny, nz;  
+  
+  // Access x, y, z:
+  //                var_name.vol[z*(ny*nx) + y*8*nx + 8*x + v]
   
 };
 
 struct FloatVolume
 {
   //Constructors
-  FloatVolume() {};
+  FloatVolume(){};
   
-  std::vector<float3> v0, v1, v2, v3, v4, v5, v6, v7;
-  int nx, ny, nz;  
+  std::vector<float3> vol;
+  int nx, ny, nz;
   
+  // Access x, y, z:
+  //                var_name.vol[z*(ny*nx) + y*8*nx + 8*x + v]
+  
+};
+
+struct MutexWrapper {
+    std::mutex m;
+    MutexWrapper() {}
+    MutexWrapper(MutexWrapper const&) {}
+    MutexWrapper& operator=(MutexWrapper const&) { return *this; }
 };
 
 #endif
