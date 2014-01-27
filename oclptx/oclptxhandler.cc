@@ -529,6 +529,14 @@ std::vector<float3> OclPtxHandler::InterpolationTestRoutine
 
   //std::thread t_name ( &class::method, this, method args... );
   
+  
+  //
+  // Ugh just do the clEnqueueWriteBuffer calls here, take the 
+  // wrapper function out of the loop. It seems that the blocking write
+  // makes this segfault.
+  //
+  
+  
   //std::vector< std::thread > thread_vector;
   std::cout<<"-1"<<"\n";
   this->WriteBuffer(
@@ -537,7 +545,7 @@ std::vector<float3> OclPtxHandler::InterpolationTestRoutine
     &(this->ocl_device_queues.at(0)),
     "int3",
     &(voxel_space.vol),
-    false
+    true
   );
   
   this->WriteBuffer(
@@ -546,7 +554,7 @@ std::vector<float3> OclPtxHandler::InterpolationTestRoutine
       &(this->ocl_device_queues.at(0)),
       "float3",
       &(flow_space.vol),
-      false
+      true
   );
   
   
@@ -557,7 +565,7 @@ std::vector<float3> OclPtxHandler::InterpolationTestRoutine
       &(this->ocl_device_queues.at(0)),
       "float3",
       &(seed_space),
-      false
+      true
   );
   
   //'std::out_of_range'
@@ -567,7 +575,7 @@ std::vector<float3> OclPtxHandler::InterpolationTestRoutine
       &(this->ocl_device_queues.at(0)),
       "unsigned int",
       &(seed_elem),
-      false
+      true
   );  
   
   //for( unsigned int i = 0; i < thread_vector.size(); i++)
