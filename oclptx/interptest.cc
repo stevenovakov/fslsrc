@@ -141,15 +141,15 @@ std::vector<unsigned int> RandSeedElem( unsigned int n, float3 mins,
   
   srand( time(NULL) ); 
   
-  for(unsigned int i = 0; i < seed_elem.size(); i++)
+  for(unsigned int i = 0; i < n; i++)
   {
-    x = (unsigned int)  rand()%1000*(maxs.x - mins.x) + mins.x;
-    y = (unsigned int)  rand()%1000*(maxs.y - mins.y) + mins.y;
-    z = (unsigned int)  rand()%1000*(maxs.z - mins.z) + mins.z;
-  
+    x = (unsigned int) (rand()%1000*(maxs.x - mins.x))/1000.0 + mins.x;
+    y = (unsigned int) (rand()%1000*(maxs.y - mins.y))/1000.0 + mins.y;
+    z = (unsigned int) (rand()%1000*(maxs.z - mins.z))/1000.0 + mins.z;
+
     temp_elem = z*(8*vvol.nx*vvol.ny) + y*8*vvol.nx + 8*x;
     // "elem #" is START of vertex list 0, 1, 2, ...., 6, 7
-
+    
     seed_elem.push_back((unsigned int) temp_elem);
   }
   
@@ -167,8 +167,10 @@ std::vector<float3> RandSeedPoints( int n,
   
   srand( time(NULL) );
   
+  
   for(unsigned int i = 0; i < seed_elem.size(); i++)
   {
+
     minx = vvol.vol.at(seed_elem.at(i)).x;
     maxx = vvol.vol.at(seed_elem.at(i) + 1).x;
     
@@ -184,7 +186,7 @@ std::vector<float3> RandSeedPoints( int n,
 
     seed_set.push_back(temp_point);
   }
-  
+
   return seed_set;
 }
 

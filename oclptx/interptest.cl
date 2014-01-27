@@ -70,113 +70,113 @@ __kernel void InterpolateTestKernel(
                                   __global float3* path_storage //W
                                 )
 {
-  unsigned int glIDx = get_global_id(0);
-  //unsigned int glIDy = get_global_id(1);
-  //unsigned int glIDz = get_global_id(2);
+  //unsigned int glIDx = get_global_id(0);
+  ////unsigned int glIDy = get_global_id(1);
+  ////unsigned int glIDz = get_global_id(2);
   
-  //unsigned int globalX = get_global_size(0);
-  //unsigned int globalY = get_global_size(1);
-  //unsigned int globalZ = get_global_size(2);
+  ////unsigned int globalX = get_global_size(0);
+  ////unsigned int globalY = get_global_size(1);
+  ////unsigned int globalZ = get_global_size(2);
   
-  unsigned int current_elem = seed_elem[glIDx];
-  float3 particle_pos = seed_list[glIDx];
+  //unsigned int current_elem = seed_elem[glIDx];
+  //float3 particle_pos = seed_list[glIDx];
   
-  float3 flow_dir; //dr, phi, theta
-  float3 temp_pos; //dx, dy, dz
+  //float3 flow_dir; //dr, phi, theta
+  //float3 temp_pos; //dx, dy, dz
   
-  int d_elem_x;
-  int d_elem_y;
-  int d_elem_z;
+  //int d_elem_x;
+  //int d_elem_y;
+  //int d_elem_z;
   
-  float ox = ((float) nx) * dx;
-  float oy = ((float) ny) * dy;
-  float oz = ((float) nz) * dz;
+  //float ox = ((float) nx) * dx;
+  //float oy = ((float) ny) * dy;
+  //float oz = ((float) nz) * dz;
   
-  float xmin, xmax;
-  float ymin, ymax;
-  float zmin, zmax;
+  //float xmin, xmax;
+  //float ymin, ymax;
+  //float zmin, zmax;
   
-  unsigned int steps_left = 0;
-  unsigned int current_step = 0;
+  //unsigned int steps_left = 0;
+  //unsigned int current_step = 0;
   
-  path_storage[glIDx*n_steps] = particle_pos;
+  //path_storage[glIDx*n_steps] = particle_pos;
   
-  while(current_step < n_steps)
-  {
-    //
-    // Current elem limits
-    //
-    xmin = (float) vertex_list[8*current_elem].s0;
-    xmax = xmin + dx;
+  //while(current_step < n_steps)
+  //{
+    ////
+    //// Current elem limits
+    ////
+    //xmin = (float) vertex_list[8*current_elem].s0;
+    //xmax = xmin + dx;
     
-    ymin = (float) vertex_list[8*current_elem].s1;
-    ymax = ymin + dy;
+    //ymin = (float) vertex_list[8*current_elem].s1;
+    //ymax = ymin + dy;
     
-    zmin = (float) vertex_list[8*current_elem].s2;
-    zmax = zmin + dz;
+    //zmin = (float) vertex_list[8*current_elem].s2;
+    //zmax = zmin + dz;
     
-    // pick vertex
-    // just gonna pick the lowest one (v0)
+    //// pick vertex
+    //// just gonna pick the lowest one (v0)
 
-    // generate next step
-    flow_dir = flow_list[8*current_elem]; //+0 (lowest x,y,z)
+    //// generate next step
+    //flow_dir = flow_list[8*current_elem]; //+0 (lowest x,y,z)
     
-    //
-    // condititions to proceed
-    //
-    //  is step out of total volume (first, break)
-    //  are we transitioning to a new elem
-    // 
+    ////
+    //// condititions to proceed
+    ////
+    ////  is step out of total volume (first, break)
+    ////  are we transitioning to a new elem
+    //// 
      
-    CIRCTOCART( flow_dir );
-    temp_pos = particle_pos + flow_dir;
+    //CIRCTOCART( flow_dir );
+    //temp_pos = particle_pos + flow_dir;
     
-    if( temp_pos.x - (float) ox > 0.0 || temp_pos.x < 0.0 ||
-    temp_pos.y - (float) oy > 0.0 || temp_pos.y < 0.0 ||
-    temp_pos.z - (float) oz > 0.0 || temp_pos.z < 0.0 )
-      break;
+    //if( temp_pos.x - (float) ox > 0.0 || temp_pos.x < 0.0 ||
+    //temp_pos.y - (float) oy > 0.0 || temp_pos.y < 0.0 ||
+    //temp_pos.z - (float) oz > 0.0 || temp_pos.z < 0.0 )
+      //break;
     
-    d_elem_x = 0;
-    d_elem_y = 0;
-    d_elem_z = 0;
+    //d_elem_x = 0;
+    //d_elem_y = 0;
+    //d_elem_z = 0;
     
-    //
-    // If statements suck. Find some way to do this with projections?
-    //
-    if( xmin - temp_pos.x > 0)
-      d_elem_x = -1;
-    else if( temp_pos.x - xmax > 0)
-      d_elem_x = 1;
+    ////
+    //// If statements suck. Find some way to do this with projections?
+    ////
+    //if( xmin - temp_pos.x > 0)
+      //d_elem_x = -1;
+    //else if( temp_pos.x - xmax > 0)
+      //d_elem_x = 1;
     
-    if( ymin - temp_pos.y > 0)
-      d_elem_y = -1;
-    else if( temp_pos.y - ymax > 0)
-      d_elem_y = 1;
+    //if( ymin - temp_pos.y > 0)
+      //d_elem_y = -1;
+    //else if( temp_pos.y - ymax > 0)
+      //d_elem_y = 1;
       
-    if( zmin - temp_pos.z > 0)
-      d_elem_z = -1;
-    else if( temp_pos.z - zmax > 0)
-      d_elem_z = 1;
+    //if( zmin - temp_pos.z > 0)
+      //d_elem_z = -1;
+    //else if( temp_pos.z - zmax > 0)
+      //d_elem_z = 1;
     
-    current_elem = (unsigned int) ((int)current_elem +
-      (d_elem_z*8*((int) ny*nx)) + (d_elem_y*8*((int) nx)) +
-        (d_elem_x*8));    
+    //current_elem = (unsigned int) ((int)current_elem +
+      //(d_elem_z*8*((int) ny*nx)) + (d_elem_y*8*((int) nx)) +
+        //(d_elem_x*8));    
     
-    // add to path_storage
+    //// add to path_storage
     
-    particle_pos = temp_pos;
-    path_storage[glIDx*n_steps + current_step] = particle_pos;
+    //particle_pos = temp_pos;
+    //path_storage[glIDx*n_steps + current_step] = particle_pos;
     
-    // proceed    
-    current_step = current_step + 1;
-  }
+    //// proceed    
+    //current_step = current_step + 1;
+  //}
   
-  // Idle Loop
-  while(current_step < n_steps)
-  {
-    path_storage[glIDx*n_steps + current_step]=(float3)(0.0, 0.0, 0.0);
-    current_step = current_step + 1;
-  }
+  //// Idle Loop
+  //while(current_step < n_steps)
+  //{
+    //path_storage[glIDx*n_steps + current_step]=(float3)(0.0, 0.0, 0.0);
+    //current_step = current_step + 1;
+  //}
   
   // All Done
 }

@@ -34,8 +34,8 @@
 
 #include <iostream>
 #include <vector>
-#include <thread>
-#include <mutex>
+//#include <thread>
+//#include <mutex>
 
 #define __CL_ENABLE_EXCEPTIONS
 // adds exception support from CL libraries
@@ -91,7 +91,6 @@ class OclPtxHandler{
     void WriteBuffer(cl::Buffer * target_buffer,
                       unsigned int buffer_mem_size,
                       cl::CommandQueue * target_cq,
-                      std::mutex * cq_mutex,
                       std::string container_type,
                       void * container_pointer, // OHGODBECAREFUL
                       bool blocking
@@ -129,7 +128,7 @@ class OclPtxHandler{
 		std::vector<cl::Device> ocl_devices;
 		
 		std::vector<cl::CommandQueue> ocl_device_queues;
-    std::vector<MutexWrapper> ocl_device_queue_mutexs;
+    //std::vector<MutexWrapper> ocl_device_queue_mutexs;
 		
 		std::vector<cl::Kernel> ocl_kernel_set;
 		//Every compiled kernel is stored here.

@@ -32,7 +32,7 @@ GPP=g++
 # to be included when compiling any executables making use of ocl runtime
 OCLLDFLAGS= -L/opt/AMD-APP-SDK-v2.8-RC-lnx64/lib/x86_64 -lOpenCL
 # one or the other
-OCLCFLAGS=  ${CXXFLAGS} -fPIC -I/opt/AMD-APP-SDK-v2.8-RC-lnx64/include -std=c++0x
+OCLCFLAGS=  ${CXXFLAGS} -fPIC -I/opt/AMD-APP-SDK-v2.8-RC-lnx64/include -std=c++0x -g
 #OCLCFLAGS=  ${CXXFLAGS} -fPIC -I/usr/local/cuda/include -std=c++0x -g
 
 OCLPTX=oclptx

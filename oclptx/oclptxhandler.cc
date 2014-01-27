@@ -35,8 +35,8 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
-#include <mutex>
-#include <thread>
+//#include <mutex>
+//#include <thread>
 
 
 #define __CL_ENABLE_EXCEPTIONS 
@@ -187,6 +187,7 @@ void OclPtxHandler::OclDeviceInfo()
 	
 	size_t siT[3];
 	cl_uint print_int;
+  cl_ulong print_ulong;
 	std::string print_string;
 	
 	std::string device_name;
@@ -207,9 +208,12 @@ void OclPtxHandler::OclDeviceInfo()
     std::cout<<"\tMax Work Group Size (x*y*z): " << siT[0] << "\n";			
     std::cout<<"\tMax Work Item Sizes (x, y, z): " << siT[0] << 
       ", " << siT[1] << ", " << siT[2] << "\n";
-    std::cout<<"\n";
+    
+    
+    dit->getInfo(CL_DEVICE_MAX_MEM_ALLOC_SIZE, &print_ulong);
+    std::cout<<"\tMax Mem Alloc Size: " << print_ulong << "\n";
 
-			
+    std::cout<<"\n";
 	}
 }
 //
@@ -219,7 +223,7 @@ void OclPtxHandler::NewCLCommandQueues()
 {
   
   this->ocl_device_queues.clear();
-  this->ocl_device_queue_mutexs.clear();
+  //this->ocl_device_queue_mutexs.clear();
 	
 	for(unsigned int k = 0; k < this->ocl_devices.size(); k++ )
   {
@@ -243,7 +247,7 @@ void OclPtxHandler::NewCLCommandQueues()
                                         );	
 		}
     
-    this->ocl_device_queue_mutexs.push_back(MutexWrapper());
+    //this->ocl_device_queue_mutexs.push_back(MutexWrapper());
     
   } 
 }
@@ -308,7 +312,7 @@ cl::Program OclPtxHandler::CreateProgram()
   // Build Program files here
   //
   
-  std::cout<<kernel_source;
+  //std::cout<<kernel_source;
 	
     
   cl::Program::Sources prog_source(  
@@ -383,7 +387,6 @@ void OclPtxHandler::WriteBuffer(
                       cl::Buffer * target_buffer,
                       unsigned int mem_size,
                       cl::CommandQueue * target_cq,
-                      std::mutex * cq_mutex,
                       std::string container_type,
                       void * container_pointer, // DANGEROUS, BE CAREFUL
                       bool blocking
@@ -401,7 +404,6 @@ void OclPtxHandler::WriteBuffer(
   // Wow that is convenient....enqueueWriteBuffer takes *void by 
   // default as it does a memory level write anyways.......
   //
-  cq_mutex->lock();
   
   target_cq->enqueueWriteBuffer(
           *target_buffer,
@@ -412,8 +414,7 @@ void OclPtxHandler::WriteBuffer(
           NULL,
           NULL
   );
-  
-  cq_mutex->unlock();   
+
   
 }
 
@@ -426,30 +427,47 @@ void OclPtxHandler::InstantiateBuffers()
   
   this->read_buffer_set.clear();
   this->write_buffer_set.clear();
-    
-  for( unsigned int i = 0; i < read_buffer_set_sizes.size(); i++)
-  {    
-    this->read_buffer_set.push_back(
-          cl::Buffer(	this->ocl_context,
-                      CL_MEM_READ_ONLY,
-                      read_buffer_set_sizes.at(i),
-                      NULL,
-                      NULL														
-                    )
-    );
+  
+  try{
+    for( unsigned int i = 0;
+      i < this->read_buffer_set_sizes.size(); i++)
+    { 
+      std::cout<<"RBUF: "<<this->read_buffer_set_sizes.at(i)<<"\n";
+      this->read_buffer_set.push_back(
+            cl::Buffer(	this->ocl_context,
+                        CL_MEM_READ_ONLY,
+                        this->read_buffer_set_sizes.at(i),
+                        NULL,
+                        NULL														
+                      )
+      );
+    }
+    for( unsigned int i = 0;
+      i < this->write_buffer_set_sizes.size(); i++)
+    { 
+      std::cout<<"WBUF: "<<this->write_buffer_set_sizes.at(i)<<"\n"; 
+      this->write_buffer_set.push_back(
+        cl::Buffer(	this->ocl_context,
+                    CL_MEM_READ_WRITE,
+                    this->write_buffer_set_sizes.at(i),
+                    NULL,
+                    NULL														
+                  )
+      );      
+    }  
   }
-  for( unsigned int i = 0; i < write_buffer_set_sizes.size(); i++)
-  {  
-    this->write_buffer_set.push_back(
-      cl::Buffer(	this->ocl_context,
-                  CL_MEM_READ_WRITE,
-                  write_buffer_set_sizes.at(i),
-                  NULL,
-                  NULL														
-                )
-    );
-  }  
-
+	catch(cl::Error err){
+		
+    // TODO 
+    //  dump all error logging to logfile
+    //  maybe differentiate b/w regular errors and cl errors
+    
+		if( oclErrorStrings(err.err()) != "CL_SUCCESS")
+    {
+			std::cout<<"ERROR: " << err.what() <<
+        " ( " << oclErrorStrings(err.err()) << ")\n";
+		}
+	}
 }
 
 //*********************************************************************
@@ -512,12 +530,11 @@ std::vector<float3> OclPtxHandler::InterpolationTestRoutine
   //std::thread t_name ( &class::method, this, method args... );
   
   //std::vector< std::thread > thread_vector;
-  
+  std::cout<<"-1"<<"\n";
   this->WriteBuffer(
     &(this->read_buffer_set.at(0)),
     this->read_buffer_set_sizes.at(0),
     &(this->ocl_device_queues.at(0)),
-    &(this->ocl_device_queue_mutexs.at(0).m),
     "int3",
     &(voxel_space.vol),
     false
@@ -527,27 +544,27 @@ std::vector<float3> OclPtxHandler::InterpolationTestRoutine
       &(this->read_buffer_set.at(1)),
       this->read_buffer_set_sizes.at(1),
       &(this->ocl_device_queues.at(0)),
-      &(this->ocl_device_queue_mutexs.at(0).m),
       "float3",
       &(flow_space.vol),
       false
   );
   
+  
+  //'std::out_of_range'
   this->WriteBuffer(
       &(this->read_buffer_set.at(2)),
       this->read_buffer_set_sizes.at(2),
       &(this->ocl_device_queues.at(0)),
-      &(this->ocl_device_queue_mutexs.at(0).m),
       "float3",
       &(seed_space),
       false
   );
-    
+  
+  //'std::out_of_range'
   this->WriteBuffer(
       &(this->write_buffer_set.at(1)),
       this->write_buffer_set_sizes.at(1),
       &(this->ocl_device_queues.at(0)),
-      &(this->ocl_device_queue_mutexs.at(0).m),
       "unsigned int",
       &(seed_elem),
       false
@@ -557,11 +574,11 @@ std::vector<float3> OclPtxHandler::InterpolationTestRoutine
     //thread_vector.at(i).join();  
   
   //thread_vector.clear();
-  
+  std::cout<<"0"<<"\n";
   // BLOCK
-  this->ocl_device_queues.at(0).finish();
+  this->ocl_device_queues.at(0).finish(); //SEGFAULT RIGHT HERE
   // BLOCK
-  
+  std::cout<<"1"<<"\n";
   cl::Kernel * test_kernel = &(this->ocl_kernel_set.at(0));
   
   test_kernel->setArg(0, this->read_buffer_set.at(0)); //voxels
@@ -576,7 +593,7 @@ std::vector<float3> OclPtxHandler::InterpolationTestRoutine
   test_kernel->setArg(9, 1.0); //dz
   test_kernel->setArg(10, n_steps); //n_steps
   test_kernel->setArg(11, this->write_buffer_set.at(0));//path container
-  
+  std::cout<<"2"<<"\n";
   
   this->ocl_device_queues.at(0).enqueueNDRangeKernel(
     *test_kernel,
@@ -586,12 +603,12 @@ std::vector<float3> OclPtxHandler::InterpolationTestRoutine
     NULL,
     NULL
   );
-  
+  std::cout<<"3"<<"\n";
   //thread_vector.push_back( std::thread(
   this->ocl_device_queues.at(0).finish();
   //  )
   //);
-  
+  std::cout<<"4"<<"\n";
   //instantiate return container;
   std::vector<float3> return_container;
   return_container.resize(result_num);
@@ -607,7 +624,7 @@ std::vector<float3> OclPtxHandler::InterpolationTestRoutine
     result_mem_size,
     return_container.data()
   );
-   
+  std::cout<<"5"<<"\n";
   return return_container;  
 }
 
