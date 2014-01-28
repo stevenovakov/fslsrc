@@ -3,52 +3,37 @@
 #
 # -std=c++0x is required for using <chrono>, for benchmarking
 #
-
+		
 include $(FSLCONFDIR)/default.mk
 
-# IMPORTANT
-#
-# Make sure following enviroment variables set
-# $OCLDIR (cl.h/cl.hpp location)
-# $OCLLIBDIR (libOpenCl.so location)
-#
-# IMPORTANT
+PROJNAME =fdt
 
-PROJNAME = fdt
+DBGFLAGS=-g
 
-#OPTFLAGS = -ggdb
+# TODO: Move LIB_OPENCL and INC_OPENCL into systemvars.mk
+# test b/w AMD/Nvidia hardware?
+#LIB_OPENCL=/usr/lib64/nvidia
+LIB_OPENCL=/opt/AMD-APP-SDK-v2.8-RC-lnx64/lib/x86_64
+#INC_OPENCL=/usr/local/cuda-5.5/include
+INC_OPENCL=/opt/AMD-APP-SDK-v2.8-RC-lnx64/include
+CPP11 = -std=c++0x
+DEBUG_SYMBOLS = -g
 
-#ARCHFLAGS = -arch i386
-#ARCHLDFLAGS = -arch i386
+USRINCFLAGS = -I${INC_NEWMAT} -I${INC_NEWRAN} -I${INC_CPROB} -I${INC_PROB} -I${INC_BOOST} -I${INC_ZLIB} -I${INC_OPENCL} ${CPP11} ${DEBUG_SYMBOLS}
+USRLDFLAGS = -L${LIB_NEWMAT} -L${LIB_NEWRAN} -L${LIB_CPROB} -L${LIB_PROB} -L${LIB_ZLIB} -L${LIB_OPENCL}
 
-ifeq ($(FSLMACHTYPE),apple-darwin8-gcc4.0)
-        ARCHFLAGS =  -arch i386 -isysroot /Developer/SDKs/MacOSX10.4u.sdk -I/usr/X11R6/include/
-        ARCHLDFLAGS = -Wl,-search_paths_first -arch i386 -isysroot /Developer/SDKs/MacOSX10.4u.sdk -L/Developer/SDKs/MacOSX10.4u.sdk/usr/X11R6/lib/ 
-endif 
-
-#figure out how to just use gcc w/ their c++ flags
-GPP=g++
-
-# to be included when compiling any executables making use of ocl runtime
-OCLLDFLAGS= -L/opt/AMD-APP-SDK-v2.8-RC-lnx64/lib/x86_64 -lOpenCL
-# one or the other
-OCLCFLAGS=  ${CXXFLAGS} -fPIC -I/opt/AMD-APP-SDK-v2.8-RC-lnx64/include -std=c++0x -g
-#OCLCFLAGS=  ${CXXFLAGS} -fPIC -I/usr/local/cuda/include -std=c++0x -g
+DLIBS =	-lwarpfns -lbasisfield -lfslsurface	-lfslvtkio -lmeshclass -lnewimage -lutils -lmiscmaths -lnewmat -lnewran -lfslio -lgiftiio -lexpat -lfirst_lib -lniftiio -lznz -lcprob -lutils -lprob -lm -lz -lOpenCL
 
 OCLPTX=oclptx
-OCLPTXOBJ = oclptx.o oclptxhandler.o
-OCLPTXSHOBJ = oclptx.so
+OCLPTXOBJ=oclptx.o oclptxhandler.o 
 
-XFILES = oclptx
+XFILES=${OCLPTX}
 
-all: ${XFILES} 
+all: ${OCLPTX}
 
-${OCLPTX}:
-		$(GPP) $(OCLCFLAGS) -o oclptx.o -c -fPIC oclptx.cc
-		$(GPP) $(OCLCFLAGS) -o oclptxhandler.o -c -fPIC oclptxhandler.cc
-		$(GPP) $(OCLCFLAGS) -Wall -shared -o $(OCLPTXSHOBJ) $(OCLPTXOBJ)
-		$(GPP) $(OCLPTXSHOBJ) -o $(OCLPTX) -g $(OCLLDFLAGS)
-		
+${OCLPTX}: ${OCLPTXOBJ}
+				${CXX} ${CXXFLAGS} ${LDFLAGS} -o $@ $^ ${DLIBS}
 
-clean:
-		rm $(OCLPTXOBJ) $(XFILES)
+lint: *.cc *.h *.cl
+				bash -c 'python cpplint.py --extensions=cc,h,cl --filter=-whitespace/braces $^ > lint 2>&1'
+

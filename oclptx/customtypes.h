@@ -42,134 +42,48 @@
 
 struct float8
 {
-	//Constructors
-	float8() {};
-	float8(float a) : s0(a), s1(a), s2(a), s3(a),
-                    s4(a), s5(a), s6(a), s7(a) {}
-	float8(float x, float y, float z, float w,
-    float a, float b, float c, float d) : s0(x), s1(y), s2(z),
-      s3(w), s4(a), s5(b), s6(c), s7(d) {}
- 
-	//Struct Data
-	float s0, s1, s2, s3, s4, s5, s6, s7;
- 
-	//Operator Overrides
-	float8 operator*(float x) const
-  { 
-      return float8(s0*x, s1*x, s2*x, s3*x, s4*x, s5*x, s6*x, s7*x); 
-  }
-	float8 operator+(const float8& a) const
-  {
-    return float8(s0+a.s0, s1+a.s1, s2+a.s2, s3+a.s3,
-      s4+a.s4, s5+a.s5, s6+a.s6, s7+a.s7);
-  }
+  float s0, s1, s2, s3, s4, s5, s6, s7;
 };
 
 
 struct float4
 {
-	//Constructors
-	float4() {};
-	float4(float a) : s0(a), s1(a), s2(a), s3(a) {}
-	float4(float x, float y, float z, float w): s0(x), s1(y),
-                                                    s2(z), s3(w) {}
- 
-	//Struct Data
-	float s0, s1, s2, s3;
- 
-	//Operator Overrides
-	float4 operator*(float x) const 
-  {
-    return float4(s0*x, s1*x, s2*x, s3*x); 
-  }
-	float4 operator+(const float4& a) const 
-  { 
-    return float4(s0+a.s0, s1+a.s1, s2+a.s2, s3+a.s3); 
-  }
+  float s0, s1, s2, s3;
 };
 
 
 struct float3
 {
-	//Constructors
-	float3() {};
-	float3(float s) : x(s), y(s), z(s) {}
-	float3(float s1, float s2, float s3) : x(s1), y(s2), z(s3) {}
-
-	//Struct Data
-	float x, y, z;
- 
-	//Operator Overrides
-	float3 operator*(float s) const { return float3(x*s, y*s, z*s); }
-	float3 operator+(const float3& a) const
-  {
-    return float3(x+a.x, y+a.y, z+a.z); 
-  }
+  float x, y, z;
 };
 
 struct float2
 {
-	//Constructors
-	float2() {};
-	float2(float s) : x(s), y(s) {}
-	float2(float x, float y) : x(x), y(y) {}
-
-	//Struct Data
-	float x, y;
- 
-	//Operator Overrides
-	float2 operator*(float s) const { return float2(x*s, y*s); }
-	float2 operator+(const float2& a) const 
-  { 
-    return float2(x+a.x, y+a.y); 
-  }
+  float x, y;
 };
 
 
 struct int3
 {
-	//Constructors
-	int3() {};
-	int3(int s) : x(s), y(s), z(s) {}
-	int3(int s1, int s2, int s3) : x(s1), y(s2), z(s3) {}
-
-	//Struct Data
-	int x, y, z;
- 
-	//Operator Overrides
-	int3 operator*(int s) const { return int3(x*s, y*s, z*s); }
-	int3 operator+(const int3& a) const
-  {
-    return int3(x+a.x, y+a.y, z+a.z); 
-  }
+  int x, y, z;
 };
 
 
 
 struct IntVolume
 {
-  //Constructors
-  IntVolume(){};
-  
   std::vector<int3> vol;
   int nx, ny, nz;  
-  
   // Access x, y, z:
   //                var_name.vol[z*(ny*nx) + y*8*nx + 8*x + v]
-  
 };
 
 struct FloatVolume
 {
-  //Constructors
-  FloatVolume(){};
-  
   std::vector<float3> vol;
   int nx, ny, nz;
-  
   // Access x, y, z:
   //                var_name.vol[z*(ny*nx) + y*8*nx + 8*x + v]
-  
 };
 
 struct MutexWrapper {

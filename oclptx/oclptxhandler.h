@@ -87,16 +87,7 @@ class OclPtxHandler{
     cl::Program CreateProgram();
     
     void InstantiateBuffers();
-    
-    void WriteBuffer(cl::Buffer * target_buffer,
-                      unsigned int buffer_mem_size,
-                      cl::CommandQueue * target_cq,
-                      std::string container_type,
-                      void * container_pointer, // OHGODBECAREFUL
-                      bool blocking
-                    );
-                      
-    
+
     //
     // Interpolation
     //
@@ -123,15 +114,15 @@ class OclPtxHandler{
     //
     cl::Context ocl_context;
     
-    std::vector<cl::Platform> ocl_platforms;		
-		
-		std::vector<cl::Device> ocl_devices;
-		
-		std::vector<cl::CommandQueue> ocl_device_queues;
+    std::vector<cl::Platform> ocl_platforms;    
+    
+    std::vector<cl::Device> ocl_devices;
+    
+    std::vector<cl::CommandQueue> ocl_device_queues;
     //std::vector<MutexWrapper> ocl_device_queue_mutexs;
-		
-		std::vector<cl::Kernel> ocl_kernel_set;
-		//Every compiled kernel is stored here.
+    
+    std::vector<cl::Kernel> ocl_kernel_set;
+    //Every compiled kernel is stored here.
     
     
     // read = CL_MEM_READ_ONLY
@@ -139,16 +130,16 @@ class OclPtxHandler{
     std::vector<cl::Buffer> write_buffer_set;
     std::vector<unsigned int> write_buffer_set_sizes;
     std::vector<cl::Buffer> read_buffer_set;
-		std::vector<unsigned int> read_buffer_set_sizes;
+    std::vector<unsigned int> read_buffer_set_sizes;
     
-		bool ocl_profiling;
-		
-		std::string ocl_routine_name;
-		//
-		// Various
-		//
-		
-		bool interpolation_complete;
+    bool ocl_profiling;
+    
+    std::string ocl_routine_name;
+    //
+    // Various
+    //
+    
+    bool interpolation_complete;
 
 };
  

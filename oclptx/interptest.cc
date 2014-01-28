@@ -67,6 +67,8 @@ IntVolume CreateVoxelSpace( int NX, int NY, int NZ )
   voxel_space.ny = NY;
   voxel_space.nz = NZ;  
   
+  int3 temp;
+  
   for(int k = 0; k < NZ; k ++)
   {
         for(int j = 0; j < NY; j++)
@@ -74,14 +76,25 @@ IntVolume CreateVoxelSpace( int NX, int NY, int NZ )
             for(int i = 0; i < NX; i++)
             {
               
-              voxel_space.vol.push_back(int3(i,j,k));
-              voxel_space.vol.push_back(int3(i+1,j,k));
-              voxel_space.vol.push_back(int3(i+1,j+1,k));
-              voxel_space.vol.push_back(int3(i, j+1, k));
-              voxel_space.vol.push_back(int3(i, j, k+1));
-              voxel_space.vol.push_back(int3(i+1, j, k+1));
-              voxel_space.vol.push_back(int3(i+1, j+1, k));
-              voxel_space.vol.push_back(int3(i, j+1, k));
+              temp.x=i;
+              temp.y=j;
+              temp.z=k;
+              voxel_space.vol.push_back(temp);
+              temp.x += 1;
+              voxel_space.vol.push_back(temp);
+              temp.y += 1;
+              voxel_space.vol.push_back(temp);
+              temp.x -= 1;
+              voxel_space.vol.push_back(temp);
+              temp.y -= 1;
+              temp.z += 1;
+              voxel_space.vol.push_back(temp);
+              temp.x += 1;
+              voxel_space.vol.push_back(temp);
+              temp.y += 1;
+              voxel_space.vol.push_back(temp);
+              temp.x -= 1;
+              voxel_space.vol.push_back(temp);
               
             }
         }
@@ -127,8 +140,14 @@ float3 FlowFunction( int3 coords, float dr, int NX, int NY, int NZ )
   float theta = std::atan(1.0) * (float) coords.z/ (float) NZ;
   float phi = 
     std::atan((float) (2*coords.y - NY)/ (float) (2*coords.x - NX));
+    
+  float3 ret;
+  ret.x = r;
+  ret.y = phi;
+  ret.z = theta;
   
-  return float3( r, phi, theta);  
+  
+  return ret;  
 }
 
 std::vector<unsigned int> RandSeedElem( unsigned int n, float3 mins,
@@ -201,20 +220,20 @@ void VolumeToFile( IntVolume vvol, FloatVolume fvol )
   
   std::string volume_filename;
   std::string flow_filename;
-  	
-	
-	time_t t = time(0);
-	struct tm * now = localtime(&t);
-	
-	convert << "Test Data/"<< now->tm_yday << "-" <<
+    
+  
+  time_t t = time(0);
+  struct tm * now = localtime(&t);
+  
+  convert << "Test Data/"<< now->tm_yday << "-" <<
     ((int) now->tm_year) + 1900 << "_"<< now->tm_hour << ":" <<
       now->tm_min << ":" << now->tm_sec;
-		
-	volume_filename = convert.str() + "_VOL.dat";
+    
+  volume_filename = convert.str() + "_VOL.dat";
   flow_filename = convert.str() + "_FLOW.dat";
   
   std::fstream volume_file;
-	volume_file.open(volume_filename.c_str(), std::ios::app|std::ios::out);
+  volume_file.open(volume_filename.c_str(), std::ios::app|std::ios::out);
   
   
   for(int i = 0; i < vsize; i ++)
@@ -228,21 +247,21 @@ void VolumeToFile( IntVolume vvol, FloatVolume fvol )
         volume_file<<",";
     }
         
-		if( i == vsize/8 - 1)
-			break;
-		else
-			volume_file <<"\n";
-	}
+    if( i == vsize/8 - 1)
+      break;
+    else
+      volume_file <<"\n";
+  }
   
   volume_file.close();
   
   
   std::fstream flow_file;
-	flow_file.open(flow_filename.c_str(), std::ios::app|std::ios::out);
+  flow_file.open(flow_filename.c_str(), std::ios::app|std::ios::out);
   
   for(int i = 0; i < fsize; i ++)
   {
-			
+      
     for( int j = 0; j < 8; j++)
     {
       flow_file<< fvol.vol.at(j + i).x <<"," << fvol.vol.at(j + i).y << "," <<
@@ -252,11 +271,11 @@ void VolumeToFile( IntVolume vvol, FloatVolume fvol )
         flow_file<<",";
     }
         
-		if( i == fsize - 1)
-			break;
-		else
-			flow_file <<"\n";
-	}
+    if( i == fsize - 1)
+      break;
+    else
+      flow_file <<"\n";
+  }
   
   flow_file.close();  
   
@@ -271,22 +290,22 @@ void PathsToFile( std::vector<float3> path_vector,
   
   std::string path_filename;
   
-	std::vector<float> temp_x;
+  std::vector<float> temp_x;
   std::vector<float> temp_y;
   std::vector<float> temp_z;
   
-	time_t t = time(0);
-	struct tm * now = localtime(&t);
-	
-	convert << "Test Data/"<< now->tm_yday << "-" <<
+  time_t t = time(0);
+  struct tm * now = localtime(&t);
+  
+  convert << "Test Data/"<< now->tm_yday << "-" <<
     ((int) now->tm_year) + 1900 << "_"<< now->tm_hour << ":" <<
       now->tm_min << ":" << now->tm_sec;
-		
-	path_filename = convert.str() + "_PATH.dat";
+    
+  path_filename = convert.str() + "_PATH.dat";
   std::cout<<"Writing to " << path_filename <<"\n";
    
   std::fstream path_file;
-	path_file.open(path_filename.c_str(), std::ios::app|std::ios::out);
+  path_file.open(path_filename.c_str(), std::ios::app|std::ios::out);
   
   for( unsigned int n = 0; n < n_seeds;n ++ )
   {

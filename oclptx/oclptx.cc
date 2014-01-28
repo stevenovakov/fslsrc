@@ -83,8 +83,14 @@ int main(int argc, char *argv[] )
   unsigned int nseeds = 100;
   unsigned int nsteps = 100;
   
-  float3 mins( 8.0, 8.0, 0.0);
-  float3 maxs( 12.0, 12.0, 1.0);
+  float3 mins;
+  mins.x = 8.0;
+  mins.y = 8.0;
+  mins.z = 0.0;
+  float3 maxs;
+  maxs.x = 12.0;
+  maxs.y = 12.0;
+  maxs.z = 1.0;
   
   float dr = 0.1;  
   
