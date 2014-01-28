@@ -63,14 +63,11 @@ __kernel void InterpolateTestKernel(
                                   unsigned int nx, 
                                   unsigned int ny, 
                                   unsigned int nz,
-                                  float dx,
-                                  float dy, 
-                                  float dz,
                                   unsigned int n_steps,
                                   __global float3* path_storage //W
                                 )
 {
-  //unsigned int glIDx = get_global_id(0);
+  unsigned int glIDx = get_global_id(0);
   ////unsigned int glIDy = get_global_id(1);
   ////unsigned int glIDz = get_global_id(2);
   
@@ -97,7 +94,7 @@ __kernel void InterpolateTestKernel(
   //float zmin, zmax;
   
   //unsigned int steps_left = 0;
-  //unsigned int current_step = 0;
+  unsigned int current_step = 0;
   
   //path_storage[glIDx*n_steps] = particle_pos;
   
@@ -172,11 +169,11 @@ __kernel void InterpolateTestKernel(
   //}
   
   //// Idle Loop
-  //while(current_step < n_steps)
-  //{
-    //path_storage[glIDx*n_steps + current_step]=(float3)(0.0, 0.0, 0.0);
-    //current_step = current_step + 1;
-  //}
+  while(current_step < n_steps)
+  {
+    path_storage[glIDx*n_steps + current_step]=(float3)(0.0, 0.0, 0.0);
+    current_step = current_step + 1;
+  }
   
   // All Done
 }

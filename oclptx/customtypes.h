@@ -86,11 +86,11 @@ struct FloatVolume
   //                var_name.vol[z*(ny*nx) + y*8*nx + 8*x + v]
 };
 
-struct MutexWrapper {
-    std::mutex m;
-    MutexWrapper() {}
-    MutexWrapper(MutexWrapper const&) {}
-    MutexWrapper& operator=(MutexWrapper const&) { return *this; }
-};
+//struct MutexWrapper {
+    //std::mutex m;
+    //MutexWrapper() {}
+    //MutexWrapper(MutexWrapper const&) {}
+    //MutexWrapper& operator=(MutexWrapper const&) { return *this; }
+//};
 
 #endif

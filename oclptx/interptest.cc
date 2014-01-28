@@ -135,7 +135,6 @@ float3 FlowFunction( int3 coords, float dr, int NX, int NY, int NZ )
   //
   // Right now its just like a "tree" from center of space to top
   //    
-  
   float r = dr;
   float theta = std::atan(1.0) * (float) coords.z/ (float) NZ;
   float phi = 
@@ -146,8 +145,7 @@ float3 FlowFunction( int3 coords, float dr, int NX, int NY, int NZ )
   ret.y = phi;
   ret.z = theta;
   
-  
-  return ret;  
+  return ret;
 }
 
 std::vector<unsigned int> RandSeedElem( unsigned int n, float3 mins,
@@ -185,7 +183,6 @@ std::vector<float3> RandSeedPoints( int n,
   int maxx, minx, maxy, miny, maxz, minz;
   
   srand( time(NULL) );
-  
   
   for(unsigned int i = 0; i < seed_elem.size(); i++)
   {
@@ -240,8 +237,8 @@ void VolumeToFile( IntVolume vvol, FloatVolume fvol )
   {
     for( int j = 0; j < 8; j++)
     {
-      volume_file<< vvol.vol.at(j + i).x <<"," << vvol.vol.at(j + i).y << "," <<
-        vvol.vol.at(j + i).z;
+      volume_file<< vvol.vol.at(j + i).x <<"," <<
+        vvol.vol.at(j + i).y << "," << vvol.vol.at(j + i).z;
       
       if( j < 7 )
         volume_file<<",";
@@ -264,8 +261,8 @@ void VolumeToFile( IntVolume vvol, FloatVolume fvol )
       
     for( int j = 0; j < 8; j++)
     {
-      flow_file<< fvol.vol.at(j + i).x <<"," << fvol.vol.at(j + i).y << "," <<
-        fvol.vol.at(j + i).z;
+      flow_file<< fvol.vol.at(j + i).x <<"," << fvol.vol.at(j + i).y <<
+        "," << fvol.vol.at(j + i).z;
       
       if( j < 7 )
         flow_file<<",";

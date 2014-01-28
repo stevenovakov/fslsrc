@@ -532,8 +532,6 @@ std::vector<float3> OclPtxHandler::InterpolationTestRoutine
         NULL,
         NULL
   );
-
-  std::cout<<"0"<<"\n";
   
   cl::Kernel * test_kernel = &(this->ocl_kernel_set.at(0));
   // do NOT call delete on this.
@@ -545,28 +543,12 @@ std::vector<float3> OclPtxHandler::InterpolationTestRoutine
   test_kernel->setArg(4, voxel_space.nx); //nx
   test_kernel->setArg(5, voxel_space.ny); //ny
   test_kernel->setArg(6, voxel_space.nz); //nz
-  test_kernel->setArg(7, 1.0); //dx
-  test_kernel->setArg(8, 1.0); //dy
-  test_kernel->setArg(9, 1.0); //dz
-  test_kernel->setArg(10, n_steps); //n_steps
-  test_kernel->setArg(11, this->write_buffer_set.at(0));//path container
-  std::cout<<"1"<<"\n";
-                                   //__global int3* vertex_list, //R
-                                  //__global float3* flow_list, //R 
-                                  //__global float3* seed_list, //R
-                                  //__global unsigned int* seed_elem,//RW
-                                  //unsigned int nx, 
-                                  //unsigned int ny, 
-                                  //unsigned int nz,
-                                  //float dx,
-                                  //float dy, 
-                                  //float dz,
-                                  //unsigned int n_steps,
-                                  //__global float3* path_storage //W
+  test_kernel->setArg(7, n_steps); //n_steps
+  test_kernel->setArg(8, this->write_buffer_set.at(0));//path container
+
   // OCL CQ BLOCK
   this->ocl_device_queues.at(0).finish();
   // OCL CQ BLOCK
-  std::cout<<"2"<<"\n";
   
   this->ocl_device_queues.at(0).enqueueNDRangeKernel(
     *test_kernel,
@@ -576,11 +558,8 @@ std::vector<float3> OclPtxHandler::InterpolationTestRoutine
     NULL,
     NULL
   );
-  std::cout<<"3"<<"\n";
 
   this->ocl_device_queues.at(0).finish();
-
-  std::cout<<"4"<<"\n";
   
   //instantiate return container
   std::vector<float3> return_container;
@@ -594,7 +573,6 @@ std::vector<float3> OclPtxHandler::InterpolationTestRoutine
     result_mem_size,
     return_container.data()
   );
-  std::cout<<"5"<<"\n";
   
   return return_container;  
 }
