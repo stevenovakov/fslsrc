@@ -43,57 +43,65 @@
 //
 // Declarations
 // 
-IntVolume CreateVoxelSpace( int NX, int NY, int NZ );
-FloatVolume CreateFlowSpace( FloatVolume voxel_space );                     
-float3 FlowFunction( int3 coords, float dr, int NX, int NY, int NZ );
-std::vector<float3> RandSeedPoints( int n, 
+FloatVolume CreateVoxelSpace( unsigned int NX, unsigned int NY,
+  unsigned int NZ, float4 min_bounds, float4 max_bounds);
+FloatVolume CreateFlowSpace( FloatVolume voxel_space,
+  float dr, float3 setpoints );                     
+float4 FlowFunction( float4 coords, float dr, float3 setpoints);
+std::vector<float4> RandSeedPoints( int n, 
   IntVolume vvol, std::vector<unsigned int> seed_elem );
 std::vector<unsigned int> RandSeedElem( int n,
   float3 mins, float3 maxs, IntVolume vvol );
 
 void VolumeToFile( IntVolume ivol, FloatVolume fvol );
-void PathsToFile( std::vector<float3> path_vector,
+void PathsToFile( std::vector<float4> path_vector,
   unsigned int n_seeds, unsigned int n_steps);
  
 //
 // Simple integer voxel space, from 0,0,0 to N,N,N
 // 
-IntVolume CreateVoxelSpace( int NX, int NY, int NZ )
+FloatVolume CreateVoxelSpace( unsigned int NX, unsigned int NY, 
+  unsigned int NZ, float4 min_bounds, float4 max_bounds)
 {
   
-  IntVolume voxel_space;
+  FloatVolume voxel_space;
   
   voxel_space.nx = NX;
   voxel_space.ny = NY;
-  voxel_space.nz = NZ;  
+  voxel_space.nz = NZ;
   
-  int3 temp;
+  float dx = (max_bounds.x - min_bounds.x)/(float)NX;
+  float dy = (max_bounds.y - min_bounds.y)/(float)NY;
+  float dz = (max_bounds.z - min_bounds.z)/(float)NZ;  
   
-  for(int k = 0; k < NZ; k ++)
+  float4 temp;
+  temp.t = 0.0;
+  
+  for(unsigned int k = 0; k < NZ; k ++)
   {
-        for(int j = 0; j < NY; j++)
+        for(unsigned int j = 0; j < NY; j++)
         {
-            for(int i = 0; i < NX; i++)
+            for(unsigned int i = 0; i < NX; i++)
             {
               
-              temp.x=i;
-              temp.y=j;
-              temp.z=k;
+              temp.x=i*dx + min_bounds.x;
+              temp.y=j*dy + min_bounds.y;
+              temp.z=k*dz + min_bounds.z;
               voxel_space.vol.push_back(temp);
-              temp.x += 1;
+              temp.x += dx;
               voxel_space.vol.push_back(temp);
-              temp.y += 1;
+              temp.y += dy;
               voxel_space.vol.push_back(temp);
-              temp.x -= 1;
+              temp.x -= dx;
               voxel_space.vol.push_back(temp);
-              temp.y -= 1;
-              temp.z += 1;
+              temp.y -= dy;
+              temp.z += dz;
               voxel_space.vol.push_back(temp);
-              temp.x += 1;
+              temp.x += dx;
               voxel_space.vol.push_back(temp);
-              temp.y += 1;
+              temp.y += dy;
               voxel_space.vol.push_back(temp);
-              temp.x -= 1;
+              temp.x -= dx;
               voxel_space.vol.push_back(temp);
               
             }
@@ -103,7 +111,8 @@ IntVolume CreateVoxelSpace( int NX, int NY, int NZ )
   return voxel_space;  
 }
 
-FloatVolume CreateFlowSpace(  IntVolume voxel_space, float dr )
+FloatVolume CreateFlowSpace(  FloatVolume voxel_space,
+  float dr, float3 setpoints )
 {
   
   FloatVolume flow_space;
@@ -111,16 +120,14 @@ FloatVolume CreateFlowSpace(  IntVolume voxel_space, float dr )
   flow_space.ny = voxel_space.ny;
   flow_space.nz = voxel_space.nz;
   
-  std::vector<int3>::iterator vit;
+  std::vector<float4>::iterator vit;
 
   for(vit = voxel_space.vol.begin(); 
     vit != voxel_space.vol.end(); ++vit)
   {
       flow_space.vol.push_back( FlowFunction( *vit,
                                               dr,
-                                              flow_space.nx,
-                                              flow_space.ny, 
-                                              flow_space.nz
+                                              setpoints
                                             )
                               );
   }
@@ -130,26 +137,28 @@ FloatVolume CreateFlowSpace(  IntVolume voxel_space, float dr )
   return flow_space;  
 }
 
-float3 FlowFunction( int3 coords, float dr, int NX, int NY, int NZ )
+float4 FlowFunction( float4 coords, float dr, float3 setpoints)
 {
   //
   // Right now its just like a "tree" from center of space to top
   //    
   float r = dr;
-  float theta = std::atan(1.0) * (float) coords.z/ (float) NZ;
+  float theta = std::atan(1.0) * coords.z/ setpoints.z;
   float phi = 
-    std::atan((float) (2*coords.y - NY)/ (float) (2*coords.x - NX));
+    std::atan2((float) (coords.y - setpoints.y),
+      (float) (coords.x - setpoints.x));
     
-  float3 ret;
+  float4 ret;
   ret.x = r;
   ret.y = phi;
   ret.z = theta;
+  ret.t = 0;
   
   return ret;
 }
 
 std::vector<unsigned int> RandSeedElem( unsigned int n, float3 mins,
-  float3 maxs, IntVolume vvol )
+  float3 maxs, FloatVolume vvol )
 {
   std::vector<unsigned int> seed_elem;
   int temp_elem;
@@ -168,17 +177,19 @@ std::vector<unsigned int> RandSeedElem( unsigned int n, float3 mins,
     // "elem #" is START of vertex list 0, 1, 2, ...., 6, 7
     
     seed_elem.push_back((unsigned int) temp_elem);
+    //std::cout<<temp_elem<<"\n";
   }
   
   return seed_elem;
   
 }
 
-std::vector<float3> RandSeedPoints( int n, 
-  IntVolume vvol, std::vector<unsigned int> seed_elem )
+std::vector<float4> RandSeedPoints( int n, 
+  FloatVolume vvol, std::vector<unsigned int> seed_elem )
 {
-  std::vector<float3> seed_set;
-  float3 temp_point;
+  std::vector<float4> seed_set;
+  float4 temp_point;
+  temp_point.t = 0;
   
   int maxx, minx, maxy, miny, maxz, minz;
   
@@ -196,9 +207,9 @@ std::vector<float3> RandSeedPoints( int n,
     minz = vvol.vol.at(seed_elem.at(i)).z;
     maxz = vvol.vol.at(seed_elem.at(i)+4).z;
     
-    temp_point.x = rand()%1000*(maxx - minx) + minx;
-    temp_point.y = rand()%1000*(maxy - miny) + miny;
-    temp_point.z = rand()%1000*(maxz - minz) + minz;
+    temp_point.x = rand()%1000*(maxx - minx)/1000.0 + minx;
+    temp_point.y = rand()%1000*(maxy - miny)/1000.0 + miny;
+    temp_point.z = rand()%1000*(maxz - minz)/1000.0 + minz;
 
     seed_set.push_back(temp_point);
   }
@@ -207,7 +218,7 @@ std::vector<float3> RandSeedPoints( int n,
 }
 
 
-void VolumeToFile( IntVolume vvol, FloatVolume fvol )
+void VolumeToFile( FloatVolume vvol, FloatVolume fvol )
 {
   
   int vsize = vvol.vol.size()/8;
@@ -279,7 +290,7 @@ void VolumeToFile( IntVolume vvol, FloatVolume fvol )
 }
 
 
-void PathsToFile( std::vector<float3> path_vector,
+void PathsToFile( std::vector<float4> path_vector,
   unsigned int n_seeds, unsigned int n_steps)
 {
     
@@ -313,11 +324,11 @@ void PathsToFile( std::vector<float3> path_vector,
       temp_z.push_back( path_vector.at(n*n_steps + s).z );    
     }
     
-    for(unsigned int i = 0; i < n_steps; i++)
+    for(unsigned int i = 0; i < (unsigned int) n_steps; i++)
     {
       path_file<<temp_x.at(i);
       
-      if(n < (unsigned int) n_steps - 1)
+      if(i < (unsigned int) n_steps - 1)
         path_file<<",";
       else
         path_file<<"\n";   
@@ -327,7 +338,7 @@ void PathsToFile( std::vector<float3> path_vector,
     {
       path_file<<temp_y.at(i);
       
-      if(n < (unsigned int) n_steps - 1)
+      if(i < (unsigned int) n_steps - 1)
         path_file<<",";
       else
         path_file<<"\n";    
@@ -337,18 +348,20 @@ void PathsToFile( std::vector<float3> path_vector,
     {
       path_file<<temp_z.at(i);
       
-      if(n < (unsigned int) n_steps - 1)
+      if(i < (unsigned int) n_steps - 1)
         path_file<<",";
       else
         path_file<<"\n";    
     }
     
+    //std::cout<< temp_x.size() <<","<<temp_y.size()<<","<<
+    //  temp_z.size()<<"\n";
     temp_x.clear();
     temp_y.clear();
     temp_z.clear();
     
-    if(n < (unsigned int) n_seeds - 1)
-      path_file<<"\n";
+    //if( n < n_seeds - 1)
+      //path_file<<"\n";
     
   }
   

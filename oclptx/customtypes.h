@@ -40,39 +40,26 @@
 #define OCLPTX_CUSTOMTYPES_H_
 
 
-struct float8
-{
-  float s0, s1, s2, s3, s4, s5, s6, s7;
-};
-
-
-struct float4
-{
-  float s0, s1, s2, s3;
-};
-
-
-struct float3
-{
+struct float3{
   float x, y, z;
 };
 
-struct float2
-{
-  float x, y;
+struct float4{
+  float x, y, z, t;
 };
 
-
-struct int3
-{
-  int x, y, z;
+struct int3{
+  float x, y, z;
 };
 
+struct int4{
+  float x, y, z, t;
+};
 
 
 struct IntVolume
 {
-  std::vector<int3> vol;
+  std::vector<int4> vol;
   int nx, ny, nz;  
   // Access x, y, z:
   //                var_name.vol[z*(ny*nx) + y*8*nx + 8*x + v]
@@ -80,7 +67,7 @@ struct IntVolume
 
 struct FloatVolume
 {
-  std::vector<float3> vol;
+  std::vector<float4> vol;
   int nx, ny, nz;
   // Access x, y, z:
   //                var_name.vol[z*(ny*nx) + y*8*nx + 8*x + v]

@@ -442,15 +442,17 @@ void OclPtxHandler::InstantiateBuffers()
 //
 // Single Device Interpolation Test
 //
-std::vector<float3> OclPtxHandler::InterpolationTestRoutine
+std::vector<float4> OclPtxHandler::InterpolationTestRoutine
     ( 
-      IntVolume voxel_space,
+      FloatVolume voxel_space,
       FloatVolume flow_space, 
-      std::vector<float3> seed_space,
+      std::vector<float4> seed_space,
       std::vector<unsigned int> seed_elem,
       unsigned int n_seeds,
       unsigned int n_steps,
-      float dr
+      float dr, 
+      float4 min_bounds, 
+      float4 max_bounds
     )
 {
   
@@ -478,12 +480,12 @@ std::vector<float3> OclPtxHandler::InterpolationTestRoutine
   
   unsigned int result_num = n_seeds*n_steps;
   unsigned int result_mem_size = result_num * flow_item_size;
-  unsigned int seed_elem_mem_size = n_seeds*sizeof(int);
+  unsigned int seed_elem_mem_size = n_seeds*sizeof(seed_elem.at(0));
   
   write_buffer_set_sizes.push_back(result_mem_size); //1
   write_buffer_set_sizes.push_back(seed_elem_mem_size); //2
 
-  cl::NDRange test_global_range(n_steps);
+  cl::NDRange test_global_range(n_seeds);
   cl::NDRange test_local_range(1);
 
   //
@@ -518,7 +520,7 @@ std::vector<float3> OclPtxHandler::InterpolationTestRoutine
         blocking_write,
         (unsigned int) 0,
         this->read_buffer_set_sizes.at(2),
-        &(seed_space),
+        seed_space.data(),
         NULL,
         NULL
   ); 
@@ -528,7 +530,7 @@ std::vector<float3> OclPtxHandler::InterpolationTestRoutine
         blocking_write,
         (unsigned int) 0,
         this->write_buffer_set_sizes.at(1),
-        &(seed_elem),
+        seed_elem.data(),
         NULL,
         NULL
   );
@@ -543,8 +545,10 @@ std::vector<float3> OclPtxHandler::InterpolationTestRoutine
   test_kernel->setArg(4, voxel_space.nx); //nx
   test_kernel->setArg(5, voxel_space.ny); //ny
   test_kernel->setArg(6, voxel_space.nz); //nz
-  test_kernel->setArg(7, n_steps); //n_steps
-  test_kernel->setArg(8, this->write_buffer_set.at(0));//path container
+  test_kernel->setArg(7, min_bounds); //ny
+  test_kernel->setArg(8, max_bounds); //nz
+  test_kernel->setArg(9, n_steps); //n_steps
+  test_kernel->setArg(10, this->write_buffer_set.at(0));//path container
 
   // OCL CQ BLOCK
   this->ocl_device_queues.at(0).finish();
@@ -562,8 +566,11 @@ std::vector<float3> OclPtxHandler::InterpolationTestRoutine
   this->ocl_device_queues.at(0).finish();
   
   //instantiate return container
-  std::vector<float3> return_container;
-  return_container.resize(result_num);
+  std::vector<float4> return_container(result_num);
+  
+  std::cout<<return_container.size()*sizeof(return_container.at(result_num))<<"\n";
+  std::cout<<n_seeds*n_steps*sizeof(float4)<<"\n";
+  std::cout<<result_mem_size<<"\n";
 
   //fill return container
   this->ocl_device_queues.at(0).enqueueReadBuffer(
@@ -571,7 +578,7 @@ std::vector<float3> OclPtxHandler::InterpolationTestRoutine
     CL_TRUE, // blocking
     0,
     result_mem_size,
-    return_container.data()
+    &return_container[0]
   );
   
   return return_container;  

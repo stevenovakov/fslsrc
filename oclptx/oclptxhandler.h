@@ -92,14 +92,16 @@ class OclPtxHandler{
     // Interpolation
     //
     
-    std::vector<float3> InterpolationTestRoutine( 
-      IntVolume voxel_space,
+    std::vector<float4> InterpolationTestRoutine( 
+      FloatVolume voxel_space,
       FloatVolume flow_space, 
-      std::vector<float3> seed_space,
+      std::vector<float4> seed_space,
       std::vector<unsigned int> seed_elem,
       unsigned int n_seeds,
       unsigned int n_steps,
-      float dr
+      float dr,
+      float4 min_bounds, 
+      float4 max_bounds
     );
     
   

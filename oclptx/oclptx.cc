@@ -76,12 +76,17 @@ int main(int argc, char *argv[] )
   // 
   //*******************************************************************
   
-  int XN = 20;
-  int YN = 20;
-  int ZN = 20;
+  unsigned int XN = 20;
+  unsigned int YN = 20;
+  unsigned int ZN = 20;
   
-  unsigned int nseeds = 100;
-  unsigned int nsteps = 100;
+  unsigned int nseeds = 200;
+  unsigned int nsteps = 200;
+  
+  std::cout<<"\n\nInterpolation Test\n"<<"\n";
+  std::cout<<"\tSeeds :" << nseeds << " Steps:" << nsteps <<"\n";
+  std::cout<<"\tXN: " << XN << " YN: " << YN << " ZN: " << ZN <<"\n";
+  std::cout<<"\n\n";
   
   float3 mins;
   mins.x = 8.0;
@@ -92,10 +97,29 @@ int main(int argc, char *argv[] )
   maxs.y = 12.0;
   maxs.z = 1.0;
   
+  float4 min_bounds;
+  min_bounds.x = 0.0;
+  min_bounds.y = 0.0;
+  min_bounds.z = 0.0;
+  min_bounds.t = 0.0;
+  
+  float4 max_bounds;
+  max_bounds.x = 20.0;
+  max_bounds.y = 20.0;
+  max_bounds.z = 20.0;
+  max_bounds.t = 0.0;
+  
   float dr = 0.1;  
   
-  IntVolume voxel_space = CreateVoxelSpace( XN, YN, ZN);
-  FloatVolume flow_space = CreateFlowSpace( voxel_space, dr);
+  FloatVolume voxel_space = CreateVoxelSpace( XN, YN, ZN,
+    min_bounds, max_bounds);
+    
+  float3 setpts;
+  setpts.z = max_bounds.z - min_bounds.z;
+  setpts.y = (max_bounds.y + min_bounds.y)/2.0;  
+  setpts.x = (max_bounds.x + min_bounds.x)/2.0;  
+    
+  FloatVolume flow_space = CreateFlowSpace( voxel_space, dr, setpts);
   std::vector<unsigned int> seed_elem = RandSeedElem(  
     nseeds,
     mins,
@@ -103,7 +127,7 @@ int main(int argc, char *argv[] )
     voxel_space
   );                  
   
-  std::vector<float3> seed_space = RandSeedPoints(  nseeds, 
+  std::vector<float4> seed_space = RandSeedPoints(  nseeds, 
                                                     voxel_space,
                                                     seed_elem
                                                   );
@@ -116,7 +140,9 @@ int main(int argc, char *argv[] )
                                                         seed_elem,
                                                         nseeds,
                                                         nsteps,
-                                                        dr
+                                                        dr,
+                                                        min_bounds,
+                                                        max_bounds
                                                       ),
                 nseeds,
                 nsteps
