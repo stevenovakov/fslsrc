@@ -147,7 +147,7 @@ __kernel void InterpolateTestKernel(
     xyz.s2 = flow_dir.s0 * cos( flow_dir.s2 );
     
     temp_pos = particle_pos + xyz;
-    
+
     if( temp_pos.x - max_bounds.s0 > 0.0 ||
       min_bounds.s0 - temp_pos.x > 0.0 ||
         temp_pos.y - max_bounds.s1 > 0.0 ||
@@ -189,11 +189,13 @@ __kernel void InterpolateTestKernel(
     path_storage[glIDx*n_steps + current_step] = particle_pos;
 
     // proceed
+    
     current_step = current_step + 1;
   }
   
   // Idle Loop
   // Re-write last viable position.
+  
   while(current_step < n_steps)
   {
     path_storage[glIDx*n_steps + current_step]= temp_pos;

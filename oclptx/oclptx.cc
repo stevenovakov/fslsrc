@@ -52,9 +52,8 @@
 //
 //*********************************************************************
 
-// Ask Jeff about maybe a good library to deal with CLI argument parsing
-// writing the custom function to parse argc/argv sucks so bad
-//int argMapper(int argc, char*argv[]);
+void SimpleInterpolationTest();
+
 
 
 //*********************************************************************
@@ -64,6 +63,24 @@
 //*********************************************************************
 
 int main(int argc, char *argv[] )
+{
+  
+  //Test Routine
+  SimpleInterpolationTest();
+
+  
+  std::cout<<"\n\nExiting...\n\n";
+  return 0;
+}
+
+//*********************************************************************
+//
+// Assorted Functions
+//
+//*********************************************************************
+
+
+void SimpleInterpolationTest()
 {
   
   OclPtxHandler * ptx_handler;
@@ -148,21 +165,8 @@ int main(int argc, char *argv[] )
                 nsteps
   );
 
-
-  //*******************************************************************
-  // 
-  //  END TEST ROUTINE
-  // 
-  //*******************************************************************
+  
   
   delete ptx_handler;
   
-  std::cout<<"\n\nExiting...\n\n";
-  return 0;
 }
-
-//*********************************************************************
-//
-// Assorted Functions
-//
-//*********************************************************************
